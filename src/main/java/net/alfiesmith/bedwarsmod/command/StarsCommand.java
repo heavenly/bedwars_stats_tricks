@@ -2,8 +2,8 @@ package net.alfiesmith.bedwarsmod.command;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ import net.minecraft.util.EnumChatFormatting;
 @RequiredArgsConstructor
 public class StarsCommand implements ICommand {
 
-  private static final long TIMEOUT = 15000;
+  private static final long TIMEOUT = 7000;
   private static final char STAR = '\u272B';
   private static final DecimalFormat FORMAT = new DecimalFormat("##.00");
   private static final EnumChatFormatting YELLOW = EnumChatFormatting.YELLOW;
@@ -54,28 +54,16 @@ public class StarsCommand implements ICommand {
     sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Loading stars..."));
 
     service.execute(() -> {
-      List<HypixelPlayer> players = new ArrayList<>();
-
-      List<NetworkPlayerInfo> playerInfo =
-          new ArrayList<>(Minecraft.getMinecraft().getNetHandler().getPlayerInfoMap()).stream()
+      Set<NetworkPlayerInfo> playerInfo =
+          Minecraft.getMinecraft().getNetHandler().getPlayerInfoMap().stream()
               .filter(info -> !isBot(info.getGameProfile().getName()))
-              .collect(Collectors.toList());
+              .collect(Collectors.toSet());
 
       for (NetworkPlayerInfo player : playerInfo) {
-        this.api.getPlayer(player.getGameProfile().getId()).thenAccept(players::add);
+        this.api.getPlayer(player.getGameProfile().getId()).thenAccept(hypixelPlayer -> {
+          sendMessage(sender, hypixelPlayer);
+        });
       }
-
-      long start = System.currentTimeMillis();
-      while (players.size() != entityPlayers.size()
-          && start + TIMEOUT > System.currentTimeMillis()) {
-      }
-
-      players = players.stream()
-          .filter(player -> !HypixelPlayer.isEmpty(player))
-          .sorted(Comparator.comparing(HypixelPlayer::getBedwarsStats))
-          .collect(Collectors.toList());
-
-      sendMessages(sender, players);
     });
   }
 
@@ -99,41 +87,39 @@ public class StarsCommand implements ICommand {
     return 0;
   }
 
-  private void sendMessages(ICommandSender sender, List<HypixelPlayer> players) {
-    for (int i = 0; i < players.size(); i++) {
-      HypixelPlayer player = players.get(i);
-      BedwarsStats stats = player.getBedwarsStats();
-      ChatComponentText text = new ChatComponentText(
-          player.getRank().getColor() + player.getDisplayName()
-              + EnumChatFormatting.WHITE + " - "
-              + player.getBedwarsStats().getLevelColor() + player.getBedwarsStats().getLevel()
-              + STAR
-      );
+  private void sendMessage(ICommandSender sender, HypixelPlayer player) {
+    BedwarsStats stats = player.getBedwarsStats();
+    ChatComponentText text = new ChatComponentText(
+        player.getRank().getColor() + player.getDisplayName()
+            + EnumChatFormatting.WHITE + " - "
+            + player.getBedwarsStats().getLevelColor() + player.getBedwarsStats().getLevel()
+            + STAR
+    );
 
-      text.getChatStyle().setChatHoverEvent(new HoverEvent(
-          Action.SHOW_TEXT,
-          new ChatComponentText(
-              YELLOW + "Name: " + GREEN + player.getDisplayName() + "\n"
-                  + YELLOW + "Network Level: " + GREEN + player.getNetworkLevel() + "\n"
-                  + YELLOW + "Bedwars Level: " + GREEN + stats.getLevel() + STAR + "\n"
-                  + YELLOW + "Bedwars Games: " + GREEN + stats.getGamesPlayed() + "\n"
-                  + YELLOW + "Bedwars Wins: " + GREEN + stats.getWins() + "\n"
-                  + YELLOW + "Bedwars Losses: " + GREEN + stats.getLosses() + "\n"
-                  + YELLOW + "Bedwars W/L: " + GREEN + FORMAT.format(stats.getWinLossRatio()) + "\n"
-                  + YELLOW + "Bedwars Kills: " + GREEN + stats.getKills() + "\n"
-                  + YELLOW + "Bedwars Deaths: " + GREEN + stats.getDeaths() + "\n"
-                  + YELLOW + "Bedwars K/D: " + GREEN + FORMAT.format(stats.getKillDeathRatio())
-                  + "\n"
-                  + YELLOW + "Bedwars Final Kills: " + GREEN + stats.getFinalKills() + "\n"
-                  + YELLOW + "Bedwars Final Deaths: " + GREEN + stats.getFinalDeaths() + "\n"
-                  + YELLOW + "Bedwars Final K/D: " + GREEN + FORMAT
-                  .format(stats.getFinalKillDeathRatio()) + "\n"
-                  + YELLOW + "Bedwars Winstreak: " + GREEN + stats.getWinstreak()
-          )
-      ));
+    text.getChatStyle().setChatHoverEvent(new HoverEvent(
+        Action.SHOW_TEXT,
+        new ChatComponentText(
+            YELLOW + "Name: " + GREEN + player.getDisplayName() + "\n"
+                + YELLOW + "Network Level: " + GREEN + player.getNetworkLevel() + "\n"
+                + YELLOW + "Bedwars Level: " + GREEN + stats.getLevel() + STAR + "\n"
+                + YELLOW + "Bedwars Games: " + GREEN + stats.getGamesPlayed() + "\n"
+                + YELLOW + "Bedwars Wins: " + GREEN + stats.getWins() + "\n"
+                + YELLOW + "Bedwars Losses: " + GREEN + stats.getLosses() + "\n"
+                + YELLOW + "Bedwars W/L: " + GREEN + FORMAT.format(stats.getWinLossRatio()) + "\n"
+                + YELLOW + "Bedwars Kills: " + GREEN + stats.getKills() + "\n"
+                + YELLOW + "Bedwars Deaths: " + GREEN + stats.getDeaths() + "\n"
+                + YELLOW + "Bedwars K/D: " + GREEN + FORMAT.format(stats.getKillDeathRatio())
+                + "\n"
+                + YELLOW + "Bedwars Final Kills: " + GREEN + stats.getFinalKills() + "\n"
+                + YELLOW + "Bedwars Final Deaths: " + GREEN + stats.getFinalDeaths() + "\n"
+                + YELLOW + "Bedwars Final K/D: " + GREEN + FORMAT
+                .format(stats.getFinalKillDeathRatio()) + "\n"
+                + YELLOW + "Bedwars Winstreak: " + GREEN + stats.getWinstreak()
+        )
+    ));
 
-      sender.addChatMessage(text);
-    }
+    sender.addChatMessage(text);
+
   }
 
   private boolean isBot(String name) {
