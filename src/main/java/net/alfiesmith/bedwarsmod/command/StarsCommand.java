@@ -11,9 +11,10 @@ import lombok.RequiredArgsConstructor;
 import net.alfiesmith.bedwarsmod.api.HypixelApi;
 import net.alfiesmith.bedwarsmod.api.model.BedwarsStats;
 import net.alfiesmith.bedwarsmod.api.model.HypixelPlayer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.HoverEvent;
 import net.minecraft.event.HoverEvent.Action;
 import net.minecraft.util.BlockPos;
@@ -54,9 +55,14 @@ public class StarsCommand implements ICommand {
 
     service.execute(() -> {
       List<HypixelPlayer> players = new ArrayList<>();
-      List<EntityPlayer> entityPlayers = new ArrayList<>(sender.getEntityWorld().playerEntities);
-      for (EntityPlayer player : entityPlayers) {
-        this.api.getPlayer(player.getUniqueID()).thenAccept(players::add);
+
+      List<NetworkPlayerInfo> playerInfo =
+          new ArrayList<>(Minecraft.getMinecraft().getNetHandler().getPlayerInfoMap()).stream()
+              .filter(info -> !isBot(info.getGameProfile().getName()))
+              .collect(Collectors.toList());
+
+      for (NetworkPlayerInfo player : playerInfo) {
+        this.api.getPlayer(player.getGameProfile().getId()).thenAccept(players::add);
       }
 
       long start = System.currentTimeMillis();
@@ -128,5 +134,32 @@ public class StarsCommand implements ICommand {
 
       sender.addChatMessage(text);
     }
+  }
+
+  private boolean isBot(String name) {
+    if (name == null || name.isEmpty()) {
+      return true;
+    }
+    // all bot names are 10 characters in length
+    if (name.length() != 10) {
+      return false;
+    }
+    int num = 0, let = 0;
+    for (char c : name.toCharArray()) {
+      if (Character.isLetter(c)) {
+        if (Character.isUpperCase(c)) {
+          // npc does not have upper case letter
+          return false;
+        }
+        let++;
+      } else if (Character.isDigit(c)) {
+        num++;
+      } else {
+        // npc name is alphanumerical
+        return false;
+      }
+    }
+
+    return num >= 2 && let >= 2;
   }
 }
