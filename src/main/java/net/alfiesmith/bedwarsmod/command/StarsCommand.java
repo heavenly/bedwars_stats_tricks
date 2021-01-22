@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import net.alfiesmith.bedwarsmod.api.HypixelApi;
 import net.alfiesmith.bedwarsmod.api.model.BedwarsStats;
@@ -63,7 +64,10 @@ public class StarsCommand implements ICommand {
           .currentTimeMillis()) {
       }
 
-      players.sort(Comparator.comparing(HypixelPlayer::getBedwarsStats));
+      players = players.stream()
+          .filter(player -> !HypixelPlayer.isEmpty(player))
+          .sorted(Comparator.comparing(HypixelPlayer::getBedwarsStats))
+          .collect(Collectors.toList());
 
       sendMessages(sender, players);
     });
