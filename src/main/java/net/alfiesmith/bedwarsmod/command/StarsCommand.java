@@ -60,8 +60,8 @@ public class StarsCommand implements ICommand {
       }
 
       long start = System.currentTimeMillis();
-      while (players.size() != entityPlayers.size() && start + TIMEOUT > System
-          .currentTimeMillis()) {
+      while (players.size() != entityPlayers.size()
+          && start + TIMEOUT > System.currentTimeMillis()) {
       }
 
       players = players.stream()
