@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.alfiesmith.bedwarsmod.api.model.HypixelPlayer;
 
 public final class HypixelApi {
@@ -22,15 +23,17 @@ public final class HypixelApi {
     this.apiKey = apiKey;
   }
 
-  public HypixelPlayer getPlayer(UUID uuid) {
+  public CompletableFuture<HypixelPlayer> getPlayer(UUID uuid) {
     String endpoint = API_BASE + "player";
-    JsonObject response = query(endpoint, "uuid", formatUuid(uuid));
-    if (response != null && response.get("success").getAsBoolean()
-        && response.has("player") && response.get("player").isJsonObject()) {
-      return HypixelPlayer.fromPlayerObject(response.get("player").getAsJsonObject());
-    } else {
-      return HypixelPlayer.empty();
-    }
+    return CompletableFuture.supplyAsync(() -> {
+      JsonObject response = query(endpoint, "uuid", formatUuid(uuid));
+      if (response != null && response.get("success").getAsBoolean()
+          && response.has("player") && response.get("player").isJsonObject()) {
+        return HypixelPlayer.fromPlayerObject(response.get("player").getAsJsonObject());
+      } else {
+        return HypixelPlayer.empty();
+      }
+    });
   }
 
   private JsonObject query(String endpoint, String... params) {

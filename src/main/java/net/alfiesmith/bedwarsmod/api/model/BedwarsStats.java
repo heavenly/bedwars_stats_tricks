@@ -7,7 +7,7 @@ import net.minecraft.util.EnumChatFormatting;
 @Getter
 public class BedwarsStats implements Comparable<BedwarsStats> {
 
-  private static final BedwarsStats EMPTY = new BedwarsStats(0, 0, 0, 0, 0, 0, 0, 0, 0);
+  private static final BedwarsStats EMPTY = new BedwarsStats(1, 0, 0, 0, 0, 0, 0, 0, 0);
 
   private final int level;
   private final EnumChatFormatting levelColor;
@@ -19,7 +19,6 @@ public class BedwarsStats implements Comparable<BedwarsStats> {
   private final int wins;
   private final int losses;
   private final int winstreak;
-
   private final double winLossRatio;
   private final double killDeathRatio;
   private final double finalKillDeathRatio;
@@ -55,15 +54,21 @@ public class BedwarsStats implements Comparable<BedwarsStats> {
       return empty();
     }
 
-    int level = achievements == null ? 1 : achievements.get("bedwars_level").getAsInt();
+    int level = achievements.get("bedwars_level").getAsInt();
+    if (!stats.has("games_played_bedwars") || stats.get("games_played_bedwars").getAsInt() == 0) {
+      return empty();
+    }
+
     int gamesPlayed = stats.get("games_played_bedwars").getAsInt();
-    int kills = stats.get("kills_bedwars").getAsInt();
-    int deaths = stats.get("deaths_bedwars").getAsInt();
-    int finalKills = stats.get("final_kills_bedwars").getAsInt();
-    int finalDeaths = stats.get("final_deaths_bedwars").getAsInt();
-    int wins = stats.get("wins_bedwars").getAsInt();
-    int losses = stats.get("losses_bedwars").getAsInt();
-    int winstreak = stats.get("winstreak").getAsInt();
+    int kills = stats.has("kills_bedwars") ? stats.get("kills_bedwars").getAsInt() : 0;
+    int deaths = stats.has("deaths_bedwars") ? stats.get("deaths_bedwars").getAsInt() : 0;
+    int finalKills =
+        stats.has("final_kills_bedwars") ? stats.get("final_kills_bedwars").getAsInt() : 0;
+    int finalDeaths =
+        stats.has("final_deaths_bedwars") ? stats.get("final_deaths_bedwars").getAsInt() : 0;
+    int wins = stats.has("wins_bedwars") ? stats.get("wins_bedwars").getAsInt() : 0;
+    int losses = stats.has("losses_bedwars") ? stats.get("losses_bedwars").getAsInt() : 0;
+    int winstreak = stats.has("winstreak") ? stats.get("winstreak").getAsInt() : 0;
     return new BedwarsStats(level, gamesPlayed, kills, deaths, finalKills, finalDeaths, wins,
         losses, winstreak);
   }

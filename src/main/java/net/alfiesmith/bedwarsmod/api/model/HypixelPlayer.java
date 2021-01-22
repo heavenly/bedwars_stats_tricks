@@ -1,13 +1,21 @@
 package net.alfiesmith.bedwarsmod.api.model;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.Getter;
+import net.minecraft.client.Minecraft;
 
 @Getter
 public class HypixelPlayer {
 
   private static final HypixelPlayer EMPTY = new HypixelPlayer(null, Rank.NONE,
       0, BedwarsStats.empty());
+
+  private static final JsonObject DEFAULT_ACHIEVEMENTS = new JsonObject();
+
+  static {
+    DEFAULT_ACHIEVEMENTS.addProperty("bedwars_level", 1);
+  }
 
   private final String displayName;
   private final Rank rank;
@@ -28,7 +36,9 @@ public class HypixelPlayer {
     int networkLevel = getLevelFromExp(player.get("networkExp").getAsInt());
 
     JsonObject stats = player.get("stats").getAsJsonObject();
-    JsonObject achievements = player.get("achievements").getAsJsonObject();
+    JsonObject achievements =
+        player.has("achievements") ? player.get("achievements").getAsJsonObject() :
+            DEFAULT_ACHIEVEMENTS;
 
     BedwarsStats bedwarsStats;
     if (stats.has("Bedwars")) {
