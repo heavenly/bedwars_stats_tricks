@@ -90,7 +90,9 @@ public class StarsCommand implements ICommand {
   private void sendMessage(ICommandSender sender, HypixelPlayer player) {
     BedwarsStats stats = player.getBedwarsStats();
     ChatComponentText text = new ChatComponentText(
-        player.getRank().getColor() + player.getDisplayName()
+        player.getRank().getColor().toString()
+            + ((isDecentPlayer(player)) ? EnumChatFormatting.BOLD.toString() : "") +
+            player.getDisplayName()
             + EnumChatFormatting.WHITE + " - "
             + player.getBedwarsStats().getLevelColor() + player.getBedwarsStats().getLevel()
             + STAR
@@ -100,16 +102,11 @@ public class StarsCommand implements ICommand {
         Action.SHOW_TEXT,
         new ChatComponentText(
             YELLOW + "Name: " + GREEN + player.getDisplayName() + "\n"
-                + YELLOW + "Network Level: " + GREEN + player.getNetworkLevel() + "\n"
                 + YELLOW + "Bedwars Level: " + GREEN + stats.getLevel() + STAR + "\n"
                 + YELLOW + "Bedwars Games: " + GREEN + stats.getGamesPlayed() + "\n"
                 + YELLOW + "Bedwars Wins: " + GREEN + stats.getWins() + "\n"
                 + YELLOW + "Bedwars Losses: " + GREEN + stats.getLosses() + "\n"
                 + YELLOW + "Bedwars W/L: " + GREEN + FORMAT.format(stats.getWinLossRatio()) + "\n"
-                + YELLOW + "Bedwars Kills: " + GREEN + stats.getKills() + "\n"
-                + YELLOW + "Bedwars Deaths: " + GREEN + stats.getDeaths() + "\n"
-                + YELLOW + "Bedwars K/D: " + GREEN + FORMAT.format(stats.getKillDeathRatio())
-                + "\n"
                 + YELLOW + "Bedwars Final Kills: " + GREEN + stats.getFinalKills() + "\n"
                 + YELLOW + "Bedwars Final Deaths: " + GREEN + stats.getFinalDeaths() + "\n"
                 + YELLOW + "Bedwars Final K/D: " + GREEN + FORMAT
@@ -147,5 +144,12 @@ public class StarsCommand implements ICommand {
     }
 
     return num >= 2 && let >= 2;
+  }
+
+  private boolean isDecentPlayer(HypixelPlayer player) {
+    BedwarsStats stats = player.getBedwarsStats();
+    return stats.getFinalKillDeathRatio() >= 2.0 || stats.getWinstreak() >= 10
+        || stats.getLevel() >= 100 || stats.getWinLossRatio() >= 1.2
+        || stats.getGamesPlayed() >= 1500;
   }
 }
