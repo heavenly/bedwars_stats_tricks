@@ -22,6 +22,7 @@ public class BedwarsStats implements Comparable<BedwarsStats> {
   private final double winLossRatio;
   private final double killDeathRatio;
   private final double finalKillDeathRatio;
+  public final double scary_index;
 
   public BedwarsStats(int level, int gamesPlayed, int kills, int deaths, int finalKills,
       int finalDeaths, int wins, int losses, int winstreak) {
@@ -38,6 +39,7 @@ public class BedwarsStats implements Comparable<BedwarsStats> {
     this.winLossRatio = wins / (losses == 0 ? 1 : losses * 1.0);
     this.killDeathRatio = kills / (deaths == 0 ? 1 : deaths * 1.0);
     this.finalKillDeathRatio = finalKills / (finalDeaths == 0 ? 1 : finalDeaths * 1.0);
+    this.scary_index = (this.level * this.finalKillDeathRatio * this.finalKillDeathRatio) / 10;
   }
 
   @Override
@@ -100,5 +102,7 @@ public class BedwarsStats implements Comparable<BedwarsStats> {
   public static BedwarsStats empty() {
     return EMPTY;
   }
-
+  public static boolean is_empty(BedwarsStats comp) {
+    return comp == EMPTY;
+  }
 }

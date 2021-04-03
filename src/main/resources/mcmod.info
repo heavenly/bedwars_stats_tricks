@@ -1,14 +1,15 @@
 [
   {
     "modid": "bedwarsmod",
-    "name": "Bedwars Mod",
-    "description": "Various Bedwars utilities.",
+    "name": "Bedwars Tricks",
+    "description": "Bedwars Dodging + Stats utilities",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "url": "https://www.github.com/alfiejsmith/bedwars-mod",
     "updateUrl": "",
     "authorList": [
-      "Alfie Smith"
+      "Alfie Smith",
+	  "Laurent Cartier"
     ],
     "credits": "",
     "logoFile": "icon.png",

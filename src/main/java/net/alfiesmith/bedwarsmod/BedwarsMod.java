@@ -2,7 +2,8 @@ package net.alfiesmith.bedwarsmod;
 
 import java.io.File;
 import net.alfiesmith.bedwarsmod.api.HypixelApi;
-import net.alfiesmith.bedwarsmod.command.StarsCommand;
+import net.alfiesmith.bedwarsmod.command.*;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -37,7 +38,7 @@ public class BedwarsMod {
     );
 
     if (config.hasChanged()) {
-      config.save();
+        config.save();
     }
 
     this.api = new HypixelApi(key.getString());
@@ -46,5 +47,9 @@ public class BedwarsMod {
   @EventHandler
   public void postInit(FMLPostInitializationEvent event) {
     ClientCommandHandler.instance.registerCommand(new StarsCommand(this.api));
+    ClientCommandHandler.instance.registerCommand(new DodgeCommand(this.api));
+    ClientCommandHandler.instance.registerCommand(new SetDodgeCommand());
+    ClientCommandHandler.instance.registerCommand(new SetScaryCommand());
+    ClientCommandHandler.instance.registerCommand(new BWHelpCommand());
   }
 }

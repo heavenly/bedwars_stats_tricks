@@ -3,6 +3,7 @@ package net.alfiesmith.bedwarsmod.command;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,7 +52,7 @@ public class StarsCommand implements ICommand {
 
   @Override
   public void processCommand(ICommandSender sender, String[] args) {
-    sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Loading stars..."));
+    sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "loading stars..."));
 
     service.execute(() -> {
       Set<NetworkPlayerInfo> playerInfo =
@@ -61,7 +62,7 @@ public class StarsCommand implements ICommand {
 
       for (NetworkPlayerInfo player : playerInfo) {
         this.api.getPlayer(player.getGameProfile().getId()).thenAccept(hypixelPlayer -> {
-          sendMessage(sender, hypixelPlayer);
+          sendMessage(sender, hypixelPlayer, player);
         });
       }
     });
@@ -87,8 +88,25 @@ public class StarsCommand implements ICommand {
     return 0;
   }
 
-  private void sendMessage(ICommandSender sender, HypixelPlayer player) {
+  private void sendMessage(ICommandSender sender, HypixelPlayer player, NetworkPlayerInfo raw_player) {
+    if (player == null || player.getDisplayName() == null) {
+        ChatComponentText text = new ChatComponentText(
+                EnumChatFormatting.BOLD.toString() + EnumChatFormatting.RED + raw_player.getGameProfile().getName() + " is nicked!"
+        );
+        sender.addChatMessage(text);
+        return;
+    }
+
     BedwarsStats stats = player.getBedwarsStats();
+    if (stats == null) {
+      ChatComponentText text = new ChatComponentText(
+              EnumChatFormatting.BOLD.toString() + EnumChatFormatting.RED + raw_player.getGameProfile().getName() + " is nicked!"
+      );
+      sender.addChatMessage(text);
+      return;
+    }
+	
+	//chat data
     ChatComponentText text = new ChatComponentText(
         player.getRank().getColor().toString()
             + ((isDecentPlayer(player)) ? EnumChatFormatting.BOLD.toString() : "") +
@@ -96,8 +114,15 @@ public class StarsCommand implements ICommand {
             + EnumChatFormatting.WHITE + " - "
             + player.getBedwarsStats().getLevelColor() + player.getBedwarsStats().getLevel()
             + STAR
+			+ EnumChatFormatting.WHITE
+			+ " - FKDR: " + FORMAT
+                .format(stats.getFinalKillDeathRatio())
+            + " - SI: " + String.format("%.2f", stats.scary_index)
     );
+    if (stats.getWinstreak() > 0)
+      text.appendText(" - WS: " + stats.getWinstreak());
 
+	//hover data
     text.getChatStyle().setChatHoverEvent(new HoverEvent(
         Action.SHOW_TEXT,
         new ChatComponentText(
@@ -116,7 +141,6 @@ public class StarsCommand implements ICommand {
     ));
 
     sender.addChatMessage(text);
-
   }
 
   private boolean isBot(String name) {
