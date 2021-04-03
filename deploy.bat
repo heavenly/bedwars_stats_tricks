@@ -1,0 +1,1 @@
+gradlew.bat build && copy /Y "C:\Users\money\Desktop\programming_garbage\git\bedwars-mod\build\libs\bedwarsmod-1.0.jar" "C:\Users\money\AppData\Roaming\.minecraft\mods\bedwarsmod-1.0.jar"
